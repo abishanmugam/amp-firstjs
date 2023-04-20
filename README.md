@@ -1,38 +1,85 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AMP First Boilerplate ⚡
 
-## Getting Started
+This example sets up the boilerplate for an AMP First Site. You can see a [live version here](https://my-next-app.sebastianbenz.vercel.app). The boilerplate includes the following features:
 
-First, run the development server:
+- AMP Extension helpers (`amp-state`, `amp-script`, ...)
+- AMP Serviceworker integration
+- App manifest
+- Offline page
+
+## Deploy your own
+
+Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example):
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/amp-first&project-name=amp-first&repository-name=amp-first)
+
+## How to use
+
+Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init), [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/), or [pnpm](https://pnpm.io) to bootstrap the example:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+npx create-next-app --example amp-first amp-first-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+yarn create next-app --example amp-first amp-first-app
+```
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm create next-app --example amp-first amp-first-app
+```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits. You will also see AMP validation errors in the console.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Todo
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Things you need to do after installing the boilerplate:
 
-## Learn More
+1. Update your app manifest in [`public/manifest.json`](public/manifest.json) with your app-specific data (`theme_color`, `background_color`, `name`, `short_name`).
+2. Update the `THEME_COLOR` variable defined in [`components/Layout.js`](components/Layout.js).
+3. Update favicon and icons in [`public/favicon.ico`](public/favicon.ico) and [`public/static/images/icons-*.png`](public/static/images).
+4. Set the default language in [`pages/_document.js`](pages/_document.js).
+5. Review the AMP Serviceworker implementation in [`public/serviceworker.js`](public/serviceworker.js).
 
-To learn more about Next.js, take a look at the following resources:
+## Tips & Tricks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Using AMP Components:** you can import AMP components using `next/head`. Checkout `components/amp/AmpCustomElement` for a simple way to import AMP components. Once the component is imported, you can use it like any other HTML element.
+- **amp-bind & amp-state:** it's no problem to use `amp-bind` and `amp-state` with Next.js. There are two things to be aware of:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+  1.  The `[...]` binding syntax, e.g. `[text]="myStateVariable"`, is not supported in JSX. Use `data-amp-bind-text="myStateVariable"` instead.
+  2.  Initializing `amp-state` via JSON string is not supported in JSX:
 
-## Deploy on Vercel
+      ```html
+      <amp-state id="myState">
+        <script type="application/json">
+          {
+            "foo": "bar"
+          }
+        </script>
+      </amp-state>
+      ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+      Instead you need to use `dangerouslySetInnerHTML` to initialize the string. can use the [`/components/amp/AmpState.js`](components/amp/AmpState.js) component to see how it works. The same approach works for `amp-access` and `amp-consent` as well:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+      ```html
+      <AmpState id="message" value={ message: 'Hello World' }/>
+      ```
+
+- **amp-list & amp-mustache:** mustache templates conflict with JSX and it's template literals need to be escaped. A simple approach is to escape them via back ticks: `` src={`{{imageUrl}}`} ``.
+- **amp-script:** you can use [amp-script](https://amp.dev/documentation/components/amp-script/) to add custom JavaScript to your AMP pages. The boilerplate includes a helper [`components/amp/AmpScript.js`](components/amp/AmpScript.js) to simplify using `amp-script`. The helper also supports embedding inline scripts. Good to know: Next.js uses [AMP Optimizer](https://github.com/ampproject/amp-toolbox/tree/master/packages/optimizer) under the hood, which automatically adds the needed script hashes for [inline amp-scripts](https://amp.dev/documentation/components/amp-script/#load-javascript-from-a-local-element).
+
+## Deployment
+
+For production builds, you need to run (the app will be build into the `.next` folder):
+
+```shell
+$ yarn build
+```
+
+To start the application in production mode, run:
+
+```shell
+$ yarn start
+```
+
+Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
